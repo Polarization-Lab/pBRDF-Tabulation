@@ -5,7 +5,7 @@ Created on Thu Apr 20 18:58:33 2023
 @author: Stefan Forschner
 """
 import numpy as np
-import rgb950_functions as rgb
+
 import scipy as sc
 import matplotlib.pyplot as plt
 import os
@@ -15,6 +15,14 @@ import os
 # This script generates the Rusinkiewicz coordinate angles for measured sphere geometries
 
 #%% Functions  
+
+def readCMMI(inputfilename):
+    raw = np.fromfile(inputfilename,np.float32).newbyteorder('>');
+    M = np.zeros([16,600,600])
+    for i in range(16):
+        M[i,:,:] = np.flipud(raw[5+i::16][0:(600*600)].reshape([600,600]).T)
+    return M
+
 def Rusinkiewicz(wi,wo,n):
     
     if np.isnan(wi).any() or np.isnan(wo).any() or np.isnan(n).any():
@@ -82,15 +90,16 @@ def pBRDFTableRounding(coords_list):
 
 #%% Radial masking
 
-sphere_directory = 'Z:\\Projects\\Oculus\\Data Sample Library\\RGB950 Polarimeter\\Measurements\\2023\\forschner_cbox\\Spheres\\red'
+sphere_directory = 'P:\\Projects\\Oculus\\Data Sample Library\\RGB950 Polarimeter\\Measurements\\2023\\forschner_cbox\\Spheres\\red'
 
 
-mm = rgb.readCMMI('{}\\sls_sphere_red_451_20.cmmi'.format(sphere_directory))
+mm = readCMMI('{}\\sls_sphere_red_451_20.cmmi'.format(sphere_directory))
 
 # radius in inches converted to cm
 R = 2.54 
 
 # indices for edges of sphere
+
 xEdge1 = 113
 xEdge2 = 510
 yEdge1 = 71
@@ -98,10 +107,11 @@ yEdge2 = 461
 
 # Plot to aid in alignment of sphere edges
 
-# plt.imshow(mm[0, yEdge1:yEdge2,xEdge1:xEdge2], cmap='gray', vmin = 0, vmax = 0.2)
-# plt.title('Mask Alignment Tool')
-# plt.show()
+plt.imshow(mm[0, yEdge1:yEdge2,xEdge1:xEdge2], cmap='gray', vmin = 0, vmax = 0.2)
+plt.title('Mask Alignment Tool')
+plt.show()
 
+#%%
 
 # mean diameter of sphere in pixels
 pixD = np.mean([xEdge2-xEdge1, yEdge2-yEdge1])
@@ -122,11 +132,11 @@ for i in range(600):
 
 # Plot to verify application of radial mask
 
-# fig, axs = plt.subplots(ncols=2)
-# fig.suptitle('Before / After Mask')
-# axs[0].imshow(mm[0,:,:], cmap='gray', vmin = 0, vmax = 0.2)
-# axs[1].imshow(mm[0,:,:]*mask, cmap='gray', vmin = 0, vmax = 0.2)
-# plt.show()
+fig, axs = plt.subplots(ncols=2)
+fig.suptitle('Before / After Mask')
+axs[0].imshow(mm[0,:,:], cmap='gray', vmin = 0, vmax = 0.2)
+axs[1].imshow(mm[0,:,:]*mask, cmap='gray', vmin = 0, vmax = 0.2)
+plt.show()
 
    
 #%% intensity masking
@@ -134,10 +144,10 @@ for i in range(600):
 # importing sphere data
 mms662 = np.zeros((16,600,600,15))
 for i in range(15):
-    mms662[:,:,:,i] = rgb.readCMMI('{}\\sls_sphere_red_662_{}.cmmi'.format(sphere_directory, i*5+20))
+    mms662[:,:,:,i] = readCMMI('{}\\sls_sphere_red_662_{}.cmmi'.format(sphere_directory, i*5+20))
 
 # assign intensity threshold
-threshold = 1.0
+threshold = 5.0
 
 
 shadow_mask = np.ones((600,600,15))
@@ -152,8 +162,8 @@ for k in range(15):
             
 # Plot for verification
 
-# fig = plt.figure()
-# plt.imshow(mms662[0,:,:,10]*shadow_mask[:,:,10])
+fig = plt.figure()
+plt.imshow(mms662[0,:,:,1]*shadow_mask[:,:,1])
 
 #%% Bin indexing
 
@@ -175,7 +185,7 @@ for qq in range(15):
 #%% Filesave
 
 # file save directory & filename
-save_file_loc = './'
+save_file_loc = './SphereGeometriesRed/'
 save_file_name = 'sphere_pBRDF_index' # filename will include _ followed by aoc
 
 for g in range(15):
