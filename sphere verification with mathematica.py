@@ -41,7 +41,7 @@ def getBinaryFile(binaryFilePathList, aoc, aoi):
 coord = np.zeros((3,600,600,15),dtype=np.int16)
 acquisitions = np.arange(20,91,5)
 for i in range(15):
-    coord[:,:,:,i] = np.reshape(np.fromfile('./SphereGeometriesRed_py/sphere_pBRDF_index_{}.bin'.format(acquisitions[i]), dtype=np.int16),(3,600,600)) 
+    coord[:,:,:,i] = np.reshape(np.fromfile('./SphereGeometriesRed_py_verification/sphere_pBRDF_index_{}.bin'.format(acquisitions[i]), dtype=np.int16),(3,600,600)) 
 
 #%% Plotting sphere coordinates 
 
@@ -60,7 +60,7 @@ plt.show()
 
 #%% Import geometries created in Mathematica
 
-binaryFilePath = "./SphereGeometriesRed"
+binaryFilePath = "./SphereGeometriesRed_m_verification"
 
 binaryList = getBinaryFiles(binaryFilePath)
 
